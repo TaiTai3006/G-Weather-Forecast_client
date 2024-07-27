@@ -7,7 +7,6 @@ import Autocomplete from "@mui/material/Autocomplete";
 import axios from "axios";
 import Modal from "react-bootstrap/Modal";
 
-
 const App = () => {
   const getCookie = (name) => {
     var nameEQ = name + "=";
@@ -20,18 +19,15 @@ const App = () => {
     return null;
   };
 
-  
   const [show, setShow] = useState(false);
 
   const handleClose = () => setShow(false);
   const handleShow = () => {
-    if (userData.status === 0){
-      setShow(true)
+    if (userData.status === 0) {
+      setShow(true);
+    } else {
+      handleUnsubcribe();
     }
-    else{
-      handleUnsubcribe()
-    }
-    
   };
 
   const searchHistoryCookies = JSON.parse(getCookie("searchHistory"));
@@ -40,11 +36,13 @@ const App = () => {
     localStorage.getItem("WeatherInfoNow")
   );
 
-  const userDataLocalStorage = JSON.parse(
-    localStorage.getItem("user")
-  );
+  const userDataLocalStorage = JSON.parse(localStorage.getItem("user"));
 
-  const [userData, setUserData] = useState(userDataLocalStorage ? userDataLocalStorage : {gmail:"",location:"",status:0})
+  const [userData, setUserData] = useState(
+    userDataLocalStorage
+      ? userDataLocalStorage
+      : { gmail: "", location: "", status: 0 }
+  );
 
   const [weatherData, setWeatherData] = useState(
     weatherInfoDataLocalStorage ? weatherInfoDataLocalStorage : []
@@ -55,41 +53,42 @@ const App = () => {
     searchHistoryCookies ? searchHistoryCookies : []
   );
 
-  const [inputEmail, setInputEmail] = useState('')
+  const [inputEmail, setInputEmail] = useState("");
 
-  const handleUnsubcribe = ()=>{
-    axios.post('http://127.0.0.1:8000/logout/', {
-      gmail: userData.gmail
-    })
-    .then(function (response) {
-      setUserData((prData)=> (response.data))
-      localStorage.setItem("user", JSON.stringify(response.data))
-    })
-    .catch(function (error) {
-      console.log(error);
-    });
-  }
+  const handleUnsubcribe = () => {
+    axios
+      .post("http://127.0.0.1:8000/logout/", {
+        gmail: userData.gmail,
+      })
+      .then(function (response) {
+        setUserData((prData) => response.data);
+        localStorage.setItem("user", JSON.stringify(response.data));
+      })
+      .catch(function (error) {
+        console.log(error);
+      });
+  };
 
-
-  const handleSubcribe = (e)=>{
+  const handleSubcribe = (e) => {
     e.preventDefault();
     navigator.geolocation.getCurrentPosition(
       ({ coords: { latitude, longitude } }) => {
-        axios.post('http://127.0.0.1:8000/register/', {
-          gmail: inputEmail,
-          location: `${latitude},${longitude}`
-        })
-        .then(function (response) {
-          setUserData((prData)=> (response.data))
-          localStorage.setItem("user", JSON.stringify(response.data))
-        })
-        .catch(function (error) {
-          console.log(error);
-        });
+        axios
+          .post("http://127.0.0.1:8000/register/", {
+            gmail: inputEmail,
+            location: `${latitude},${longitude}`,
+          })
+          .then(function (response) {
+            setUserData((prData) => response.data);
+            localStorage.setItem("user", JSON.stringify(response.data));
+          })
+          .catch(function (error) {
+            console.log(error);
+          });
       }
     );
-    setShow(false)
-  }
+    setShow(false);
+  };
 
   useEffect(() => {
     setSearchHistory(JSON.parse(getCookie("searchHistory")));
@@ -199,7 +198,9 @@ const App = () => {
               freeSolo
               id="free-solo-2-demo"
               disableClearable
-              options={searchHistory.map((option) => option)}
+              options={
+                searchHistory ? searchHistory.map((option) => option) : []
+              }
               onChange={handleChange}
               onInputChange={handleInputChange}
               renderInput={(params) => (
@@ -219,7 +220,7 @@ const App = () => {
             onClick={handleSearch}
             className="btn btn-primary mt-4 py-2"
           >
-            Search 
+            Search
           </button>
           <div className="d-flex align-items-center my-2">
             <div className="flex-grow-1 border-bottom border-2"></div>
@@ -236,16 +237,20 @@ const App = () => {
           </button>
           <div className="my-4">
             <p>
-            {userData.status === 0 ? '** Click the subscribe button to receive weather information.' : `Hi, ${userData.gmail}.`}
+              {userData.status === 0
+                ? "** Click the subscribe button to receive weather information."
+                : `Hi, ${userData.gmail}.`}
             </p>
             <button
-              style={{ backgroundColor: userData.status === 0 ? "red" : "#6C757D" }}
+              style={{
+                backgroundColor: userData.status === 0 ? "red" : "#6C757D",
+              }}
               type="button"
               data-toggle="modal"
               onClick={handleShow}
               className="btn btn-danger py-2"
             >
-              {userData.status === 0 ? 'Subscribe' : 'Unsubscribe'}
+              {userData.status === 0 ? "Subscribe" : "Unsubscribe"}
             </button>
           </div>
         </div>
@@ -287,7 +292,7 @@ const App = () => {
               </div>
               <h4 className="my-4 fw-bold">4-Day Forecast</h4>
               <div className="row ">
-                {weatherData.forecastday.slice(1).map((data, index) => (
+                {weatherData?.forecastday?.slice(1)?.map((data, index) => (
                   <div
                     key={index}
                     className="col p-4 m-1 text-light rounded"
@@ -329,8 +334,7 @@ const App = () => {
                 id="exampleInputEmail1"
                 aria-describedby="emailHelp"
                 placeholder="Enter email"
-                
-                onChange={(e)=>setInputEmail(e.target.value)}
+                onChange={(e) => setInputEmail(e.target.value)}
                 required
               />
             </div>
@@ -342,10 +346,14 @@ const App = () => {
                 required
               />
               <label class="form-check-label" for="exampleCheck1">
-              Permission to use your location
+                Permission to use your location
               </label>
             </div>
-            <button type="submit" class="btn btn-primary" onClick={(e)=>handleSubcribe(e)}>
+            <button
+              type="submit"
+              class="btn btn-primary"
+              onClick={(e) => handleSubcribe(e)}
+            >
               Submit
             </button>
           </form>
